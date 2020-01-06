@@ -9,6 +9,10 @@ or not wispered).
 Download all the .py files. You can make your own recording or text me to get sample recordings. Open the program in the terminal
 using 'python3 gui.py' and the GUI will open. It comes with instructions (in German). 
 
+# Dependecies
+
+You need numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth.
+
 # Share
 
 Please use the code and/or edit it. Let me know, what you are going to do with it. I'd be glad to hear. Everything is licensed 
