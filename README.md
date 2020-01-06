@@ -11,7 +11,7 @@ using 'python3 gui.py' and the GUI will open. It comes with instructions (in Ger
 
 # Dependecies
 
-You need numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth.
+You need Python 3.x, numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth.
 
 # Share
 
