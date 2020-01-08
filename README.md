@@ -13,6 +13,12 @@ using 'python3 gui.py' and the GUI will open. It comes with instructions (in Ger
 
 You need Python 3.x as well as the modules numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth.
 
+## Problems
+
+This following issue occured to me several times on Mac Catalina: https://github.com/YannickJadoul/Parselmouth/issues/10 
+Solved it with installing and uninstalling either python-parselmouth or just parselmouth via pip or pip3, respectively (try 
+both).
+
 # Share
 
 Please use the code and/or edit it. Let me know, what you are going to do with it. I'd be glad to hear. Everything is licensed 
