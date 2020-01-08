@@ -15,7 +15,7 @@ You need Python 3.x as well as the modules numpy, matplotlib, ffmpeg, sounddevic
 
 ## Problems
 
-This following issue occured to me several times on Mac Catalina: https://github.com/YannickJadoul/Parselmouth/issues/10 
+This following issue occured to me several times on macOS Catalina: https://github.com/YannickJadoul/Parselmouth/issues/10 
 Solved it with installing and uninstalling either python-parselmouth or just parselmouth via pip or pip3, respectively (try 
 both).
 
