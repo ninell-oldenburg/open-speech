@@ -98,17 +98,17 @@ class Text(tk.Frame):
         button.pack()
 
         default = OPTIONS[0]
-        self.var = utt.data['examples'][default]
+        self.var = utt.data['examples'][default][0]
         self.l = tk.Label(self, text=self.var, font=controller.body_font)
         self.l.pack({"anchor": 's'})
 
-        self.button_rec = Button(self, text='Aufnehmen', command=self.start)
+        self.button_rec = Button(self, text='Start Aufnahme', command=self.start)
         self.button_rec.pack({"anchor": 's'})
 
-        self.button_stop = Button(self, text='Stop', command=self.stop)
+        self.button_stop = Button(self, text='Stop Aufnahme', command=self.stop)
         self.button_stop.pack({"anchor": 's'})
 
-        button_ana = tk.Button(self, text="Analyse", command=lambda: controller.show_frame("Analyze"))
+        button_ana = tk.Button(self, text="Analysieren", command=lambda: controller.show_frame("Analyze"))
         button_ana.pack({"anchor": 's'})
 
         button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
@@ -118,7 +118,7 @@ class Text(tk.Frame):
 
     def show_text(self,name):
         self.controller.set_text(name)
-        text = utt.data['examples'][name]
+        text = utt.data['examples'][name][0]
         self.l.configure(text=text)
 
     def stop(self):
@@ -165,8 +165,11 @@ class Analyze(tk.Frame):
         label.pack(side="top", fill="x", pady=10)
         self.text = controller.text
 
-        self.button = Button(self, text='Anzeigen', command=self.plot_analysis) #### regel das !!!!
+        self.button = Button(self, text='Matplotlib', command=self.plot_analysis)
         self.button.pack({"anchor": 's'})
+
+        self.button2 = Button(self, text='Unity', command=self.plot_analysis2)
+        self.button2.pack({"anchor": 's'})
 
         button1 = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
         button1.pack({"anchor": 's'})
@@ -175,6 +178,54 @@ class Analyze(tk.Frame):
         figure = Main('nonblocking.wav',self.text)
         plot = Plotting(figure.main())
         plot.plot_this_fig()
+
+    def plot_analysis2(self):
+        figure = Main('nonblocking.wav',self.text)
+        result = figure.main()
+        '''
+        print("----- result:")
+        print(type(result))             #<class 'analysis.Point'>
+        print(dir(result))              #
+        print(type(result).__name__)    #Point
+
+        print("----- db:")
+        print(type(result.db))          #<class 'numpy.ndarray'>
+        print(result.db)
+        print(result.db.size)           #535
+        '''
+        file_db = open('db.csv', 'w')
+        for v in result.db:
+            print(v, file=file_db)
+        file_db.close()
+
+        file_db = open('text.txt', 'w')
+        print(result.text, file=file_db)
+        file_db.close()
+
+        '''
+        print("----- duration:")
+        print(type(result.duration))    #<class 'float'>
+        print(result.duration)          #4.342131519274377
+        '''
+        file_db = open('duration.csv', 'w')
+        print(result.duration, file=file_db)
+        file_db.close()
+        '''
+        print("----- pitch:")
+        print(type(result.pitch))       #<class 'numpy.ndarray'>
+        print(result.pitch)
+        print(result.pitch.size)        #535
+        '''
+        file_db = open('pitch.csv', 'w')
+        for v in result.pitch:
+            print(v, file=file_db)
+        file_db.close()
+        '''
+        print("----- f1_2:")
+        print(type(result.f1_2))        #<class 'tuple'>
+        print(result.f1_2)
+        #print(result.f1_2.size)
+        '''
 
 if __name__ =='__main__':
     app = GUI()
