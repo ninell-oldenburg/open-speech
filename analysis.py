@@ -126,7 +126,15 @@ class Main:
 
         diff_a = int(len(a)/anim_len)
         diff_b = int(len(b)/anim_len)
-        diff_t = int(anim_len/len(t))
+        long = 1
+        short = 1
+        if anim_len > len(t):
+            long = anim_len
+            short = len(t)
+        else:
+            long = len(t)
+            short = anim_len
+        diff_t = int(long/short)
         c = 0
         d = 0
         e = 0
@@ -151,7 +159,7 @@ class Main:
                 array_b[d] = list[~np.isnan(list)].mean()
                 d+=1
 
-            if (i % diff_t == 0 and e<len(t)):
+            if (i % diff_t == 0 and e<len(t) and i<anim_len):
                 textlist[i] = t[e]
                 e+=1
 
