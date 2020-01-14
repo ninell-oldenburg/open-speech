@@ -17,6 +17,7 @@ import collections
 import glob
 import math
 import warnings
+import utt
 
 class Main:
 
@@ -81,15 +82,15 @@ class Main:
     def make_plot(self,a,b,c):
         pitch = a
         db = b
-        voic = c
+        text = c
 
         x1 = np.linspace(0, len(pitch), len(pitch))
         x2 = np.linspace(0, len(db), len(db))
-        x3 = np.linspace(0, len(voic), len(voic))
+        x3 = np.linspace(0, len(text), len(text))
 
         y1 = pitch
         y2 = db
-        y3 = voic
+        y3 = text
 
         plt.subplot(4, 1, 1)
         plt.plot(x1, y1)
@@ -104,7 +105,7 @@ class Main:
         plt.subplot(4, 1, 3)
         plt.plot(x3, y3)
         plt.xlabel('Number of Frames')
-        plt.ylabel('Voicing')
+        plt.ylabel('Text')
 
         plt.subplot(4, 1, 4)
         bins = np.linspace(0,100,100)
@@ -117,16 +118,18 @@ class Main:
 
         plt.show()
 
-    def post_process(self,a,b):
+    def post_process(self,a,b,t):
         anim_len = int(round(self.get_duration()*25)) # exact length for animation
         array_a = np.zeros(anim_len)
         array_b = np.zeros(anim_len)
-        voiced = np.zeros(anim_len, dtype=bool)
+        textlist = np.empty(anim_len, dtype=object)
 
         diff_a = int(len(a)/anim_len)
         diff_b = int(len(b)/anim_len)
+        diff_t = int(anim_len/len(t))
         c = 0
         d = 0
+        e = 0
 
         for i in range(0,len(b)):
 
@@ -138,8 +141,6 @@ class Main:
                     warnings.simplefilter("ignore", category=RuntimeWarning)
                     lst = np.array(lst)
                     array_a[c] = lst[~np.isnan(lst)].mean()
-                if str(array_a[c]) != 'nan':
-                    voiced[c] = True
                 c+=1
 
             if (i % diff_b == 0 and (i/diff_b)<anim_len):
@@ -150,17 +151,25 @@ class Main:
                 array_b[d] = list[~np.isnan(list)].mean()
                 d+=1
 
-        return array_a, array_b, voiced
+            if (i % diff_t == 0 and e<len(t)):
+                textlist[i] = t[e]
+                e+=1
+
+            if i<anim_len and textlist[i] == None:
+                textlist[i] = ''
+
+        return array_a, array_b, textlist
 
     def main(self):
         # Output: 4 np.arrays with #1 pitch; #2 db values; #3 formant f1; #4 formant f2
 
-        pitch, db, voiced = self.post_process(self.get_pitch(),self.get_db())
+        text = utt.data['examples'][self.textname][1].split()
+        pitch, db, text = self.post_process(self.get_pitch(),self.get_db(),text)
 
-        # self.make_plot(pitch,db, voiced)
+        # self.make_plot(pitch,db,text)
 
-        Point = collections.namedtuple('Point', ['pitch', 'db', 'f1_2', 'duration', 'voiced', 'quality', 'textname'])
-        result = Point(pitch, db, self.get_formants(), self.get_duration(), voiced, db, self.textname)
+        Point = collections.namedtuple('Point', ['pitch', 'db', 'f1_2', 'duration', 'quality', 'text'])
+        result = Point(pitch, db, self.get_formants(), self.get_duration(), db, text)
 
         return result
 
