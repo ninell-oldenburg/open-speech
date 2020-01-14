@@ -20,9 +20,8 @@ class Plotting(object):
     def __init__(self, sound):
         self.pitch = sound.pitch
         self.dura = sound.duration
-        self.voicing = sound.voiced # bool array of voiced frames
         self.quality = sound.quality
-        self.text = sound.textname
+        self.text = sound.text
 
         for value in self.pitch:
             np.nan_to_num(value)
@@ -45,9 +44,7 @@ class Plotting(object):
         ax1.set_facecolor('xkcd:navy')
         ax1.axes.get_xaxis().set_visible(False)
 
-        self.string = utt.data['examples'][self.text]
-        self.label = ax1.text(5, 500, self.string[0], ha='center', color='xkcd:white', va='center', fontsize=12)
-
+        self.label = ax1.text(self.dura/2, self.pitch_max, self.text[0], ha='center', color='xkcd:white', va='center', fontsize=12)
         self.scatter = ax1.scatter([], [], s=30, c='xkcd:white', linewidths=1, marker='.')
 
         ax2.set_xlim(0, 2)
@@ -91,13 +88,12 @@ class Plotting(object):
 
         y = self.pitch
         x = np.linspace(0, self.dura, len(y))
-
         data = np.hstack((x[:i, np.newaxis], y[:i, np.newaxis]))
         self.scatter.set_offsets(data)
 
-        self.label.set_text(self.string[:i + 1])
+        self.label.set_text(self.text[i])
 
-        y_bar = self.db[i:]
+        y_bar = self.db[:i]
         for j, b in enumerate(self.bar):
             if len(y_bar) > j:
                 b.set_height(y_bar[j])
@@ -121,10 +117,8 @@ class Plotting(object):
         # http://matplotlib.sourceforge.net/api/animation_api.html
         anim.save('animation.mp4', fps=25, extra_args=['-vcodec', 'libx264'])
 
-        play.Play('audio/busch/ballade1.wav')
+        # play.Play('audio/busch/ballade1.wav')
         plt.show()
-
-        ### TODO ###
 
         """
         x = threading.Thread(target=play.Play, args=(,))
