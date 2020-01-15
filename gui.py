@@ -14,6 +14,14 @@ from analysis import Main
 from plot import Plotting
 import utt
 
+# Julian Jungel
+# University of Dramatic Art »Ernst Busch«, Berlin
+# Function plot_analysis2() for Unity-Interface
+from shutil import copyfile
+import time
+import argparse
+from pythonosc import udp_client
+
 class GUI(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -163,7 +171,6 @@ class Analyze(tk.Frame):
         self.controller = controller
         label = tk.Label(self, text="Analyse anzeigen? Das kann eine Weile dauern", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
-        self.text = controller.text
 
         self.button = Button(self, text='Matplotlib', command=self.plot_analysis)
         self.button.pack({"anchor": 's'})
@@ -175,57 +182,47 @@ class Analyze(tk.Frame):
         button1.pack({"anchor": 's'})
 
     def plot_analysis(self):
-        figure = Main('nonblocking.wav',self.text)
+        figure = Main('nonblocking.wav',self.controller.text)
         plot = Plotting(figure.main())
         plot.plot_this_fig()
 
+    # Unity interface
     def plot_analysis2(self):
+        # OSC-Stuff:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--ip", default="127.0.0.1")
+        parser.add_argument("--port", type=int, default=5005)
+        args = parser.parse_args()
+        client = udp_client.SimpleUDPClient(args.ip, args.port);
+
+        # analyse result:
         figure = Main('nonblocking.wav',self.text)
         result = figure.main()
-        '''
-        print("----- result:")
-        print(type(result))             #<class 'analysis.Point'>
-        print(dir(result))              #
-        print(type(result).__name__)    #Point
 
-        print("----- db:")
-        print(type(result.db))          #<class 'numpy.ndarray'>
-        print(result.db)
-        print(result.db.size)           #535
-        '''
-        file_db = open('db.csv', 'w')
+        # dump files:
+        copyfile('nonblocking.wav', 'render/nonblocking.wav')
+
+        file_db = open('render/text.txt', 'w')
+        print(result.text, file=file_db)
+        file_db.close()
+
+        file_db = open('render/db.csv', 'w')
         for v in result.db:
             print(v, file=file_db)
         file_db.close()
 
-        file_db = open('text.txt', 'w')
-        print(result.text, file=file_db)
-        file_db.close()
-
-        '''
-        print("----- duration:")
-        print(type(result.duration))    #<class 'float'>
-        print(result.duration)          #4.342131519274377
-        '''
-        file_db = open('duration.csv', 'w')
+        file_db = open('render/duration.csv', 'w')
         print(result.duration, file=file_db)
         file_db.close()
-        '''
-        print("----- pitch:")
-        print(type(result.pitch))       #<class 'numpy.ndarray'>
-        print(result.pitch)
-        print(result.pitch.size)        #535
-        '''
-        file_db = open('pitch.csv', 'w')
+
+        file_db = open('render/pitch.csv', 'w')
         for v in result.pitch:
             print(v, file=file_db)
         file_db.close()
-        '''
-        print("----- f1_2:")
-        print(type(result.f1_2))        #<class 'tuple'>
-        print(result.f1_2)
-        #print(result.f1_2.size)
-        '''
+
+        # wait just long enough - but not too long! - and then send OSC message:
+        time.sleep(3)   # you shall wait for 3 seconds! not 2! and not 4!
+        client.send_message("/start", "start")
 
 if __name__ =='__main__':
     app = GUI()
