@@ -11,7 +11,8 @@ using 'python3 gui.py' and the GUI will open. It comes with instructions (in Ger
 
 # Dependecies
 
-You need Python 3.x as well as the modules numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth.
+You need Python 3.x as well as the modules numpy, matplotlib, ffmpeg, sounddevice, tkinter, portaudio, pyaudio, parselmouth. 
+There is a Unity-Interface provided for which you need Unity and python-osc.
 
 ## Problems
 
