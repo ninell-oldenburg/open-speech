@@ -6,7 +6,7 @@ or not wispered).
 
 # Use
 
-Download all the .py files. You can make your own recording or text me to get sample recordings. Open the program in the terminal
+Download all the .py files. You can make your own recording or find sample recordings in the audio folder. Open the program in the terminal
 using 'python3 gui.py' and the GUI will open. It comes with instructions (in German). 
 
 # Dependecies
