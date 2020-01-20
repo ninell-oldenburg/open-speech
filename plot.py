@@ -10,9 +10,6 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 from analysis import Main
-import utt
-import play
-import threading
 
 
 class Plotting(object):
@@ -31,6 +28,11 @@ class Plotting(object):
 
         self.pitch_min = np.nanmin(self.pitch[np.nonzero(self.pitch)])
         self.pitch_max = np.nanmax(self.pitch)
+        print(type(self.pitch_min))
+        if np.isnan(self.pitch_min):
+            self.text = np.array([' ' for _ in range(len(self.text))])
+            self.pitch_min = 0
+            self.pitch_max = 0
 
         # set up the figure, the axis, and the subplot elements
         self.fig = plt.figure()
@@ -39,12 +41,18 @@ class Plotting(object):
         ax3 = self.fig.add_subplot(2, 2, 4)
 
         ax1.set_xlim(0,self.dura)
+        print('limits: ' + str(self.pitch_min - 50) + ", "+ str(self.pitch_max + 50))
         ax1.set_ylim(self.pitch_min - 50, self.pitch_max + 50)
         ax1.set_ylabel('Tonhöhe (Hz)')
         ax1.set_facecolor('xkcd:navy')
         ax1.axes.get_xaxis().set_visible(False)
 
-        self.label = ax1.text(self.dura/2, self.pitch_max, self.text[0], ha='center', color='xkcd:white', va='center', fontsize=12)
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = ['Lucida Grande'] + plt.rcParams['font.sans-serif']
+        plt.rcParams['mathtext.default'] = 'regular'
+
+        self.string = ''
+        self.label = ax1.text(self.dura/2, self.pitch_max, self.string, ha='center', color='xkcd:white', va='center', fontsize=12)
         self.scatter = ax1.scatter([], [], s=30, c='xkcd:white', linewidths=1, marker='.')
 
         ax2.set_xlim(0, 2)
@@ -91,9 +99,14 @@ class Plotting(object):
         data = np.hstack((x[:i, np.newaxis], y[:i, np.newaxis]))
         self.scatter.set_offsets(data)
 
-        self.label.set_text(self.text[i])
+        if self.text[i] == "\n":
+            self.string = ''
+        elif self.text[i] != '':
+            self.string += self.text[i]
+            self.string += ' '
+            self.label.set_text(self.string)
 
-        y_bar = self.db[:i]
+        y_bar = self.db[i:] ### to be defined
         for j, b in enumerate(self.bar):
             if len(y_bar) > j:
                 b.set_height(y_bar[j])
@@ -128,7 +141,7 @@ class Plotting(object):
         """
 
 if __name__ == '__main__':
-    ana = Main('audio/busch/ballade1.wav', 'Ballade an der Reichstag 1')
+    ana = Main('nonblocking.wav', 'Ballade an der Reichstag 1')
     test = Plotting(ana.main())
     test.plot_this_fig()
     #play.Play('audio/busch/ballade1.wav')
