@@ -156,8 +156,7 @@ class Instruct(tk.Frame):
         label.pack(side="top", fill="x", pady=10)
 
         instruct = utt.data['welcome']['instructions']
-        text = tk.Text(self, height=4, width=50)
-        text.insert(tk.END, instruct)
+        text = tk.Label(self, text=instruct, font=controller.body_font)
         text.pack()
 
         button1 = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
@@ -187,6 +186,7 @@ class Analyze(tk.Frame):
         plot.plot_this_fig()
 
     # Unity interface
+
     def plot_analysis2(self):
         # OSC-Stuff:
         parser = argparse.ArgumentParser()
@@ -196,12 +196,13 @@ class Analyze(tk.Frame):
         client = udp_client.SimpleUDPClient(args.ip, args.port);
 
         # analyse result:
-        figure = Main('nonblocking.wav',self.text)
+        figure = Main('nonblocking.wav',self.controller.text)
         result = figure.main()
 
         # dump files:
         copyfile('nonblocking.wav', 'render/nonblocking.wav')
 
+        # SILBEN IN ZEILEN
         file_db = open('render/text.txt', 'w')
         print(result.text, file=file_db)
         file_db.close()
