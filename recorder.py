@@ -36,6 +36,11 @@ class RecordingFile(object):
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
         self._pa = pyaudio.PyAudio()
+        info = self._pa.get_host_api_info_by_index(0)
+        numdevices = info.get('deviceCount')
+        for i in range(0, numdevices):
+            if (self._pa.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                print("Input Device id ", i, " - ", self._pa.get_device_info_by_host_api_device_index(0, i).get('name'))
         self.wavefile = self._prepare_file(self.fname, self.mode)
         self._stream = None
 
@@ -50,6 +55,7 @@ class RecordingFile(object):
         self._stream = self._pa.open(format=pyaudio.paInt16,
                                         channels=self.channels,
                                         rate=self.rate,
+                                        input_device_index=0,
                                         input=True,
                                         frames_per_buffer=self.frames_per_buffer)
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
@@ -63,6 +69,7 @@ class RecordingFile(object):
         self._stream = self._pa.open(format=pyaudio.paInt16,
                                         channels=self.channels,
                                         rate=self.rate,
+                                        input_device_index=0,
                                         input=True,
                                         frames_per_buffer=self.frames_per_buffer,
                                         stream_callback=self.get_callback())
