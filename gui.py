@@ -122,7 +122,7 @@ class Text(tk.Frame):
         button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
         button_back.pack({"anchor": 's'})
 
-        self.rec = reco.Recorder(channels=2)
+        self.rec = reco.Recorder(channels=1, input_device_index=2)
 
     def show_text(self,name):
         self.controller.set_text(name)
@@ -186,7 +186,6 @@ class Analyze(tk.Frame):
         plot.plot_this_fig()
 
     # Unity interface
-
     def plot_analysis2(self):
         # OSC-Stuff:
         parser = argparse.ArgumentParser()
@@ -202,9 +201,12 @@ class Analyze(tk.Frame):
         # dump files:
         copyfile('nonblocking.wav', 'render/nonblocking.wav')
 
-        # SILBEN IN ZEILEN
+        # split into syllables
+        text = ''
+        for x in self.controller.text:
+            text += x + '\n'
         file_db = open('render/text.txt', 'w')
-        print(result.text, file=file_db)
+        print(text, file=file_db)
         file_db.close()
 
         file_db = open('render/db.csv', 'w')
@@ -222,7 +224,7 @@ class Analyze(tk.Frame):
         file_db.close()
 
         # wait just long enough - but not too long! - and then send OSC message:
-        time.sleep(3)   # you shall wait for 3 seconds! not 2! and not 4!
+        time.sleep(3) # you shall wait for 3 seconds! not 2! and not 4!
         client.send_message("/start", "start")
 
 if __name__ =='__main__':
