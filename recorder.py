@@ -17,24 +17,26 @@ class Recorder(object):
     Records in mono by default.
     '''
 
-    def __init__(self, channels=1, rate=44100, frames_per_buffer=1024):
+    def __init__(self, channels=1, rate=44100, frames_per_buffer=1024, input_device_index=0):
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
+        self.input_device_index=input_device_index
 
     def open(self, fname, mode='wb'):
         return RecordingFile(fname, mode, self.channels, self.rate,
-                            self.frames_per_buffer)
+                            self.frames_per_buffer, self.input_device_index)
 
 
 class RecordingFile(object):
     def __init__(self, fname, mode, channels,
-                rate, frames_per_buffer):
+                rate, frames_per_buffer, input_device_index):
         self.fname = fname
         self.mode = mode
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
+        self.input_device_index=input_device_index
         self._pa = pyaudio.PyAudio()
         info = self._pa.get_host_api_info_by_index(0)
         numdevices = info.get('deviceCount')
@@ -55,7 +57,7 @@ class RecordingFile(object):
         self._stream = self._pa.open(format=pyaudio.paInt16,
                                         channels=self.channels,
                                         rate=self.rate,
-                                        input_device_index=0,
+                                        input_device_index=self.input_device_index,
                                         input=True,
                                         frames_per_buffer=self.frames_per_buffer)
         for _ in range(int(self.rate / self.frames_per_buffer * duration)):
@@ -69,7 +71,7 @@ class RecordingFile(object):
         self._stream = self._pa.open(format=pyaudio.paInt16,
                                         channels=self.channels,
                                         rate=self.rate,
-                                        input_device_index=0,
+                                        input_device_index=self.input_device_index,
                                         input=True,
                                         frames_per_buffer=self.frames_per_buffer,
                                         stream_callback=self.get_callback())
