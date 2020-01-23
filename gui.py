@@ -33,6 +33,7 @@ class GUI(tk.Tk):
         self.QUIT = Button(self, text="Exit", command=self.quit)
         self.QUIT.pack({"side": "top"})
         self.text = list(utt.data['examples'].keys())[0]
+        self.self_record = True
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -43,7 +44,7 @@ class GUI(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, Text, Analyze, Instruct):
+        for F in (StartPage, Text, Analyze, Instruct, Originals):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -79,6 +80,9 @@ class StartPage(tk.Frame):
         self.l.pack()
 
         self.button = Button(self, text='Aufnahme', command=lambda: controller.show_frame("Text"))
+        self.button.pack({"anchor": "s"})
+
+        self.button = Button(self, text='Originale anhören', command=lambda: controller.show_frame("Originals"))
         self.button.pack({"anchor": "s"})
 
         self.button = Button(self, text='Wie geht das?', command=lambda: controller.show_frame("Instruct"))
@@ -122,7 +126,7 @@ class Text(tk.Frame):
         button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
         button_back.pack({"anchor": 's'})
 
-        self.rec = reco.Recorder(channels=1, input_device_index=2)
+        self.rec = reco.Recorder(channels=2, input_device_index=0)
 
     def show_text(self,name):
         self.controller.set_text(name)
@@ -146,6 +150,40 @@ class Text(tk.Frame):
             self.running = self.rec.open('nonblocking.wav','wb')
             self.running.start_recording()
 
+
+class Originals(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Welcher Satz soll gespielt werden?", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+        self.running = None
+
+        OPTIONS = list(utt.data['examples'].keys())
+
+        variable = StringVar(self)
+        variable.set(OPTIONS[0])
+
+        w = OptionMenu(self, variable, *OPTIONS)
+        w.pack()
+
+        button = Button(self, text="Text anzeigen", command=lambda: self.show_text(variable.get()))
+        button.pack()
+
+        default = OPTIONS[0]
+        self.var = utt.data['examples'][default][0]
+        self.l = tk.Label(self, text=self.var, font=controller.body_font)
+        self.l.pack({"anchor": 's'})
+
+        button_ana = tk.Button(self, text="Analysieren", command=lambda: controller.show_frame("Analyze"))
+        button_ana.pack({"anchor": 's'})
+
+    def show_text(self,name):
+        self.controller.set_text(name)
+        text = utt.data['examples'][name][0]
+        self.l.configure(text=text)
+        self.controller.self_record = False
 
 class Instruct(tk.Frame):
 
@@ -181,7 +219,12 @@ class Analyze(tk.Frame):
         button1.pack({"anchor": 's'})
 
     def plot_analysis(self):
-        figure = Main('nonblocking.wav',self.controller.text)
+        name = ''
+        if self.controller.self_record == True:
+            name += 'nonblocking.wav'
+        else:
+            name += 'audio/busch/' + utt.data['names'][self.controller.text] + '.wav'
+        figure = Main(name,self.controller.text)
         plot = Plotting(figure.main())
         plot.plot_this_fig()
 
@@ -195,12 +238,20 @@ class Analyze(tk.Frame):
         client = udp_client.SimpleUDPClient(args.ip, args.port);
 
         # analyse result:
-        figure = Main('nonblocking.wav',self.controller.text)
+        name = ''
+        if self.controller.self_record == True:
+            name += 'nonblocking.wav'
+        else:
+            name += 'audio/busch/' + utt.data['names'][self.controller.text] + '.wav'
+        figure = Main(name, self.controller.text)
         result = figure.main()
 
         # dump files:
-        copyfile('nonblocking.wav', 'render/nonblocking.wav')
-
+        if self.controller.self_record == True:
+            copyfile('nonblocking.wav', 'render/nonblocking.wav')
+        else:
+            copyfile(name, 'render/nonblocking.wav')
+            
         # split into syllables
         text = ''
         for x in self.controller.text:
