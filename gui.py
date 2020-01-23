@@ -132,6 +132,8 @@ class Text(tk.Frame):
         self.controller.set_text(name)
         text = utt.data['examples'][name][0]
         self.l.configure(text=text)
+        if self.controller.self_record == False:
+            self.controller.self_record = True
 
     def stop(self):
         self.running
@@ -183,7 +185,8 @@ class Originals(tk.Frame):
         self.controller.set_text(name)
         text = utt.data['examples'][name][0]
         self.l.configure(text=text)
-        self.controller.self_record = False
+        if self.controller.self_record == True:
+            self.controller.self_record = False
 
 class Instruct(tk.Frame):
 
