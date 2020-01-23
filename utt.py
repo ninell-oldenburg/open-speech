@@ -7,6 +7,15 @@
 #
 
 data = {}
+
+data['names'] = {'Ballade an der Reichstag 1': 'ballade1',
+                 'Ballade an den Reichstag 2': 'ballade2',
+                 'Faust Auszug': 'faust',
+                 'Egmont Auszug': 'egmont',
+                 'Ballade von der Mäusefrau': 'ballademaus',
+                 'Gegen die Objektiven': 'brecht_gegendieobjektiven'
+                 }
+
 data['examples'] = {
     'Ballade an der Reichstag 1': ('Als man den Galgen mir hat zudiktiert,\n'
         'Da hab ich an den Reichstag appeliert.\n'
