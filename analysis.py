@@ -6,22 +6,21 @@
 # Python 3.6
 #
 
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import wavfile
 import parselmouth as psl
 import wave
 import contextlib
 import collections
 import glob
-import math
 import warnings
 import utt
 
+# Main class for the analysis of the soundfile
 class Main:
 
-    # takes filename to analyse as argument
+    # takes filename and text as input
+    # and uses praat-interface to get the right data out of it
     def __init__(self,filename,text):
         self.name = filename
         self.textname = text
@@ -31,6 +30,7 @@ class Main:
         self.intensity = self.snd.to_intensity()
         self.formant = self.snd.to_formant_burg(max_number_of_formants=5, maximum_formant=5500)
 
+    # post processing function to properly get the pitch in a resonable array
     def get_pitch(self):
 
         pitch_values = self.pitch.selected_array['frequency']
@@ -38,6 +38,7 @@ class Main:
 
         return pitch_values
 
+    # post processing function to properly get the db scale in a resonable array
     def get_db(self):
 
         list = []
@@ -57,6 +58,8 @@ class Main:
 
         return db
 
+    # post processing function to properly get the formants 1 and 2
+    # in a resonable array of two arrays
     def get_formants(self):
 
         frame_number_fo = self.formant.get_number_of_frames()
@@ -71,6 +74,7 @@ class Main:
 
         return formant_values_f1, formant_values_f2
 
+    # compute the overall duration of the sound
     def get_duration(self):
 
         with contextlib.closing(wave.open(self.name,'r')) as f:
@@ -79,6 +83,7 @@ class Main:
             duration = frames / float(rate)
             return duration
 
+    # just make a normal plot (to check whether everything was processed correctly)
     def make_plot(self,a,b,c):
         pitch = a
         db = b
@@ -118,6 +123,8 @@ class Main:
 
         plt.show()
 
+    # trim everything on one length: pitch, db, text
+    # length: 25 fps
     def post_process(self,a,b,t):
         anim_len = int(round(self.get_duration()*25)) # exact length for animation
         array_a = np.zeros(anim_len)
@@ -169,10 +176,17 @@ class Main:
         return array_a, array_b, textlist
 
     def main(self):
-        # Output: 4 np.arrays with #1 pitch; #2 db values; #3 formant f1; #4 formant f2
+        # Output: np.arrays (dtype=float) with #1 pitch; #2 db values; #3 formant f1 and f2, duration as float
+        # as well as np array #4 quality (which is db for now as well) and #5 string array of text
 
-        text = utt.data['examples'][self.textname][1].split()
-        pitch, db, text = self.post_process(self.get_pitch(),self.get_db(),text)
+        text = utt.data['examples'][self.textname][1].split(' ')
+
+        pitch = self.get_pitch()
+        db = self.get_db()
+
+        # the line below can be used to cut down the fps to 25
+        # (works without as well but has a very high computation time)
+        # pitch, db, text = self.post_process(self.get_pitch(),self.get_db(),text)
 
         # self.make_plot(pitch,db,text)
 
