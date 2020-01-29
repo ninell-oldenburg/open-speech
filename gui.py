@@ -22,11 +22,12 @@ import time
 import argparse
 from pythonosc import udp_client
 
+# basic class for frame model
 class GUI(tk.Tk):
 
     def __init__(self, *args, **kwargs):
+        # initialze the frame with some buttons as well as a welcome text
         tk.Tk.__init__(self, *args, **kwargs)
-
         self.title_font = font.Font(family='Helvetica', size=18, weight="bold", slant="italic")
         self.body_font = font.Font(family='Helvetica', size=13)
         self.geometry("1000x400")
@@ -43,6 +44,7 @@ class GUI(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+        # all frames are going to be rendered b e f o r e the actual frame is called
         self.frames = {}
         for F in (StartPage, Text, Analyze, Instruct, Originals):
             page_name = F.__name__
@@ -57,16 +59,16 @@ class GUI(tk.Tk):
         self.show_frame("StartPage")
 
     def show_frame(self, page_name):
-        '''Show a frame for the given page name'''
+        # show a frame for the given page name
         frame = self.frames[page_name]
         frame.tkraise()
 
     def set_text(self, text):
-        print('old text: ' + self.text)
+        # setter for which text is used
         self.text = text
-        print('new text: ' + self.text)
 
 
+# welcome page class
 class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -89,6 +91,8 @@ class StartPage(tk.Frame):
         self.button.pack({"anchor": 's'})
 
 
+# this is the class where you choose the input text
+# and record the text
 class Text(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -98,36 +102,48 @@ class Text(tk.Frame):
         label.pack(side="top", fill="x", pady=10)
         self.running = None
 
+        # options for the dropdown menu
         OPTIONS = list(utt.data['examples'].keys())
-
         variable = StringVar(self)
         variable.set(OPTIONS[0])
 
+        # dropdown menu f
         w = OptionMenu(self, variable, *OPTIONS)
         w.pack()
 
+        # show text button
+        # would be nice to show the right away without having to click on 'show text' (TODO)
         button = Button(self, text="Text anzeigen", command=lambda: self.show_text(variable.get()))
         button.pack()
 
+        # the final text corresponding to the user chosen title
         default = OPTIONS[0]
         self.var = utt.data['examples'][default][0]
         self.l = tk.Label(self, text=self.var, font=controller.body_font)
         self.l.pack({"anchor": 's'})
 
+        # start record button
         self.button_rec = Button(self, text='Start Aufnahme', command=self.start)
         self.button_rec.pack({"anchor": 's'})
 
+        # stop record button
         self.button_stop = Button(self, text='Stop Aufnahme', command=self.stop)
         self.button_stop.pack({"anchor": 's'})
 
+        # analysis button
         button_ana = tk.Button(self, text="Analysieren", command=lambda: controller.show_frame("Analyze"))
         button_ana.pack({"anchor": 's'})
 
+        # back button
         button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
         button_back.pack({"anchor": 's'})
 
+        # the recorder class comes from recorder.py (by Steven Loria)
+        # every input device with it's id is printed to the console
         self.rec = reco.Recorder(channels=2, input_device_index=0)
 
+    # when showing the text to the user at the same time change it from the controller
+    # I used a global bool self_record for that
     def show_text(self,name):
         self.controller.set_text(name)
         text = utt.data['examples'][name][0]
@@ -135,6 +151,7 @@ class Text(tk.Frame):
         if self.controller.self_record == False:
             self.controller.self_record = True
 
+    # the functions stops recording if there is a stream running
     def stop(self):
         self.running
         if self.running is not None:
@@ -144,6 +161,7 @@ class Text(tk.Frame):
         else:
             print('not runnning')
 
+    # the function starts recording if there is no function running
     def start(self):
         self.running
         if self.running is not None:
@@ -152,7 +170,8 @@ class Text(tk.Frame):
             self.running = self.rec.open('nonblocking.wav','wb')
             self.running.start_recording()
 
-
+# if you want to record a text by yourself
+# you can listen to the originals (pre-recorded voices)
 class Originals(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -162,25 +181,32 @@ class Originals(tk.Frame):
         label.pack(side="top", fill="x", pady=10)
         self.running = None
 
+        # options for the dropdown menu
         OPTIONS = list(utt.data['examples'].keys())
-
         variable = StringVar(self)
         variable.set(OPTIONS[0])
 
+        # still using a dropdown menu
         w = OptionMenu(self, variable, *OPTIONS)
         w.pack()
 
+        # show text button
+        # would be nice to show the right away without having to click on 'show text' (TODO)
         button = Button(self, text="Text anzeigen", command=lambda: self.show_text(variable.get()))
         button.pack()
 
+        # the final text corresponding to the user chosen title
         default = OPTIONS[0]
         self.var = utt.data['examples'][default][0]
         self.l = tk.Label(self, text=self.var, font=controller.body_font)
         self.l.pack({"anchor": 's'})
 
+        # analysis button
         button_ana = tk.Button(self, text="Analysieren", command=lambda: controller.show_frame("Analyze"))
         button_ana.pack({"anchor": 's'})
 
+    # when showing the text to the user at the same time change it from the controller
+    # I used a global bool self_record for that
     def show_text(self,name):
         self.controller.set_text(name)
         text = utt.data['examples'][name][0]
@@ -188,6 +214,8 @@ class Originals(tk.Frame):
         if self.controller.self_record == True:
             self.controller.self_record = False
 
+
+# a class for instrutions
 class Instruct(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -196,14 +224,20 @@ class Instruct(tk.Frame):
         label = tk.Label(self, text="Wie geht das?", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
+        # put pre-defined text in it and show it
         instruct = utt.data['welcome']['instructions']
         text = tk.Label(self, text=instruct, font=controller.body_font)
         text.pack()
 
-        button1 = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
-        button1.pack({"anchor": 's'})
+        # back button
+        button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
+        button_back.pack({"anchor": 's'})
 
 
+# class for running the analysis
+# the analysis can be made in two ways
+# either with the matplotlib resulting in an animated graph
+# or the unity-way resulting in different csv tables that you can use via unity
 class Analyze(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -212,16 +246,22 @@ class Analyze(tk.Frame):
         label = tk.Label(self, text="Analyse anzeigen? Das kann eine Weile dauern", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
-        self.button = Button(self, text='Matplotlib', command=self.plot_analysis)
-        self.button.pack({"anchor": 's'})
+        # matplotlib button
+        self.button_mat = Button(self, text='Matplotlib', command=self.matplot_plot)
+        self.button_mat.pack({"anchor": 's'})
 
-        self.button2 = Button(self, text='Unity', command=self.plot_analysis2)
-        self.button2.pack({"anchor": 's'})
+        # unity button
+        self.button_uni = Button(self, text='Unity', command=self.plot_analysis2)
+        self.button_uni.pack({"anchor": 's'})
 
-        button1 = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
-        button1.pack({"anchor": 's'})
+        # back button
+        button_back = tk.Button(self, text="Zurück", command=lambda: controller.show_frame("StartPage"))
+        button_back.pack({"anchor": 's'})
 
-    def plot_analysis(self):
+    # matplotlib function
+    def matplot_plot(self):
+        # name is defined depending on whether the self-record mode was used
+        # or if the originals should be used (still the path is hard-coded (TODO))
         name = ''
         if self.controller.self_record == True:
             name += 'nonblocking.wav'
@@ -231,7 +271,7 @@ class Analyze(tk.Frame):
         plot = Plotting(figure.main())
         plot.plot_this_fig()
 
-    # Unity interface
+    # unity interface
     def plot_analysis2(self):
         # OSC-Stuff:
         parser = argparse.ArgumentParser()
